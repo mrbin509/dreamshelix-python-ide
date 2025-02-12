@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Python IDE - DreamsHelix</title>
+
+    <!-- CodeMirror for Syntax Highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+
+    <!-- Pyodide for Running Python Code -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #1e1e1e; color: white; }
+        #editor { width: 80%; height: 200px; margin: auto; }
+        #output { background: black; padding: 10px; border-radius: 5px; margin-top: 10px; }
+        button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Python IDE - DreamsHelix</h1>
+
+    <textarea id="codeEditor">print("Hello, DreamsHelix!")</textarea>
+
+    <br>
+    <button onclick="runPython()">Run</button>
+    <button onclick="clearEditor()">Clear</button>
+    <button onclick="toggleTheme()">Toggle Theme</button>
+    <button onclick="saveCode()">Save Code</button>
+    <button onclick="loadCode()">Load Code</button>
+
+    <pre id="output"></pre>
+
+    <script>
+        let editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+            mode: "python",
+            theme: "dracula",
+            lineNumbers: true,
+            indentUnit: 4,
+            smartIndent: true,
+        });
+
+        async function runPython() {
+            let pyodide = await loadPyodide();
+            await pyodide.loadPackage(["numpy", "pandas", "matplotlib"]);
+            let code = editor.getValue();
+            try {
+                let result = pyodide.runPython(code);
+                document.getElementById("output").innerText = result;
+            } catch (error) {
+                document.getElementById("output").innerText = "Error: " + error;
+            }
+        }
+
+        function clearEditor() { editor.setValue(""); document.getElementById("output").innerText = ""; }
+
+        function toggleTheme() {
+            let currentTheme = editor.getOption("theme");
+            let newTheme = (currentTheme === "dracula") ? "default" : "dracula";
+            editor.setOption("theme", newTheme);
+        }
+
+        function saveCode() {
+            localStorage.setItem("savedPythonCode", editor.getValue());
+            alert("Code saved successfully!");
+        }
+
+        function loadCode() {
+            let savedCode = localStorage.getItem("savedPythonCode");
+            if (savedCode) { editor.setValue(savedCode); } else { alert("No saved code found!"); }
+        }
+    </script>
+</body>
+</html>
