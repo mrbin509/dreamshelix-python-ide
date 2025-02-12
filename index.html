@@ -50,6 +50,9 @@
             let code = editor.getValue();
             try {
                 let result = pyodide.runPython(code);
+                if (result === undefined){
+                    result = "No output (Check your code for print statements)";
+                }
                 document.getElementById("output").innerText = result;
             } catch (error) {
                 document.getElementById("output").innerText = "Error: " + error;
