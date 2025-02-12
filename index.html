@@ -44,20 +44,29 @@
             smartIndent: true,
         });
 
+        let pyodideReady = false;
+        let pyodideInstance;
+
+        async function loadPyodideInstance() {
+            pyodideInstance = await loadPyodide();
+            await pyodideInstance.loadPackage(["numpy", "pandas", "matplotlib"]);
+            pyodideReady = true;
+            consloe.log("Pyodide is ready!");
+        }
         async function runPython() {
-            let pyodide = await loadPyodide();
-            await pyodide.loadPackage(["numpy", "pandas", "matplotlib"]);
+            if(!pyodideReady){
+                document.getElementById("output").innerText = "Loading Pyodide... Please wait!";
+                return;
+            }
             let code = editor.getValue();
             try {
-                let result = pyodide.runPython(code);
-                if (result === undefined){
-                    result = "No output (Check your code for print statements)";
-                }
-                document.getElementById("output").innerText = result;
+                let result = pyodideInstance.runPython(code);
+                document.getElementById("output").innerText = result || "No output. Use print() to display results.";
             } catch (error) {
                 document.getElementById("output").innerText = "Error: " + error;
             }
         }
+        loadPyodideInstance();
 
         function clearEditor() { editor.setValue(""); document.getElementById("output").innerText = ""; }
 
